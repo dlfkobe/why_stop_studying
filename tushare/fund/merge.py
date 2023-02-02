@@ -25,23 +25,23 @@ def get_fund_manager(fund_code):
         # for i in df_manager:
         #   print(i)
         one_person = df_manager.iloc[0]
-        print(list(one_person))
+        # print(list(one_person))
         return [True,one_person]
     
-def get_fund_company(fund_code):    
-    # 获取基金经理信息，以及开始管理该基金的日期
-    df_company = pro.fund_manager(ts_code=fund_code)
-    # print(df_manager)
-    if df_manager.empty:
-       return [False,0]
-    else:
-        df_manager = df_manager.sort_values('begin_date',ascending=False)
-        # print(type(df_manager))
-        # for i in df_manager:
-        #   print(i)
-        one_person = df_manager.iloc[0]
-        print(list(one_person))
-        return [True,one_person]
+# def get_fund_company(fund_code):    
+#     # 获取基金经理信息，以及开始管理该基金的日期
+#     df_company = pro.fund_manager(ts_code=fund_code)
+#     # print(df_manager)
+#     if df_manager.empty:
+#        return [False,0]
+#     else:
+#         df_manager = df_manager.sort_values('begin_date',ascending=False)
+#         # print(type(df_manager))
+#         # for i in df_manager:
+#         #   print(i)
+#         one_person = df_manager.iloc[0]
+#         print(list(one_person))
+#         return [True,one_person]
         
 
 
@@ -58,22 +58,24 @@ with open(path, 'r',encoding='utf-8') as f:
     headers_2 = ["ts_code","ann_date","name","gender","birth_year","edu","nationality","begin_date","end_date","resume"]
     headers.extend(headers_1)
     headers.extend(headers_2)
+    print(headers)
     
     for row in reader:
-        print(row)
+        # print(row)
 
         code = row[1]
-        print(code)
+        # print(code)
         flag,manager = get_fund_manager(code)
         if  not flag :
             continue
-        print(manager)
+        # print(manager)
         row.extend(manager)
         result.append(row)
     
-    
-print("结果为：\n",result)
+
+# print("结果为：\n",result)
 test = pd.DataFrame(columns=headers,data=result)
 test.to_csv('testcsv.csv',encoding='utf-8')
+print("转换完成！")
     
     
