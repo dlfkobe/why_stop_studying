@@ -2,268 +2,175 @@ import os
 import json
 from py2neo import Graph,Node
 
-class MedicalGraph:
+class FinanceGraph:
     def __init__(self):
         cur_dir = '/'.join(os.path.abspath(__file__).split('/')[:-1])# 获取当前绝对路径的上层目录 linux中应用'/'split和join
-        self.data_path = os.path.join(cur_dir, 'data/fund_data2.json')# 获取json文件路径
+        self.data_path = os.path.join(cur_dir, 'data/cb_data2.json')# 获取json文件路径
         # self.g = Graph("http://localhost:7474", username="neo4j", password="123456")#老版本neo4j
         self.g = Graph("http://localhost:7474", auth=("neo4j", "123456"))
     '''读取文件'''
     def read_nodes(self):
-        # 共７类节点，节点的设置与业务相关
-
-        # checks = [] # 检查
-        # departments = [] #科室
-        # diseases = []  # 疾病
-        # drugs = []  # 药品
-        # foods = []  # 食物
-        # producers = [] #药品大类
-        # symptoms = []#症状
         
-        ts_code = [] #转债代码
-        bond_full_name = [] #转债名称
-        # exchange = [] #上市地点
-        # par = [] 
+        # 债券类，共两类节点
+        ts_codes = [] #转债代码 列表
+        stk_codes = [] #正股名称 列表
         
-
-        #这一项没有出现在节点中，在后面编程中用于创建疾病信息表
-        disease_infos = []#疾病信息
-
-        # 构建节点实体关系,共11类，medical2做出来的只有10类，因为数据量少
-        rels_department = [] #　科室－科室关系，这一项关系PPT中未列出，后加入
-        rels_noteat = [] # 疾病－忌吃食物关系
-        rels_doeat = [] # 疾病－宜吃食物关系
-        rels_recommandeat = [] # 疾病－推荐吃食物关系
-        rels_commonddrug = [] # 疾病－通用药品关系
-        rels_recommanddrug = [] # 疾病－热门药品关系
-        rels_check = [] # 疾病－检查关系
-        rels_drug_producer = [] # 厂商－药物关系
-        rels_symptom = [] #疾病症状关系
-        rels_acompany = [] # 疾病并发关系
-        rels_category = [] #　疾病与科室之间的关系
-
+        # 转债信息表，并不是节点
+        cb_infos = []
+        
+        # 债券类 构建实体关系 共一种
+        rels_match_to = []  # 转债与正股的关系
+        
         count = 0
-        for data in open(self.data_path):
-            disease_dict = {}
+        
+        for data in open(self.data_path,encoding='utf-8'):
+            print(data)
+            cb_dict = {}
             count += 1
             print(count)
-            data_json = json.loads(data)#读取数据
-            disease = data_json['name']
-            disease_dict['name'] = disease
-            diseases.append(disease)
-            disease_dict['desc'] = ''
-            disease_dict['prevent'] = ''
-            disease_dict['cause'] = ''
-            disease_dict['easy_get'] = ''
-            disease_dict['cure_department'] = ''
-            disease_dict['cure_way'] = ''
-            disease_dict['cure_lasttime'] = ''
-            disease_dict['symptom'] = ''
-            disease_dict['cured_prob'] = ''
-
-            #查找一下词条是否在提取出来的文档段中，每一条文档段内容长度不一
-            if 'symptom' in data_json:
-                symptoms += data_json['symptom']# +号用于组合列表
-                for symptom in data_json['symptom']:#用for循环的原因：一个疾病可能对应好几个症状，手画图表示
-                    rels_symptom.append([disease, symptom]) # 对于每个症状都建立一个疾病——症状的关系
-
-            if 'acompany' in data_json:
-                for acompany in data_json['acompany']:#同上，一个疾病可能伴随多个并发症
-                    rels_acompany.append([disease, acompany])# 建立一个疾病——伴随疾病的关系
-
-            if 'desc' in data_json:
-                disease_dict['desc'] = data_json['desc']#疾病描述，这里不是关系，而是定义的属性。根据业务要求把一个字段定义为关系或者节点的属性
-
-            if 'prevent' in data_json:
-                disease_dict['prevent'] = data_json['prevent']#疾病预防
-
-            if 'cause' in data_json:
-                disease_dict['cause'] = data_json['cause']#引起疾病的原因
-
-            if 'get_prob' in data_json:
-                disease_dict['get_prob'] = data_json['get_prob']#发病率
-
-            if 'easy_get' in data_json:
-                disease_dict['easy_get'] = data_json['easy_get']#易感人群
-
-            if 'cure_department' in data_json:
-                cure_department = data_json['cure_department']#治疗科室
-                if len(cure_department) == 1:
-                    rels_category.append([disease, cure_department[0]])#只有一个科室的情况
-                if len(cure_department) == 2:
-                    big = cure_department[0]#大科室
-                    small = cure_department[1]#细分小科室
-                    rels_department.append([small, big])  # 提取科室——科室关系
-                    rels_category.append([disease, small])#提取疾病——科室关系
-
-                disease_dict['cure_department'] = cure_department
-                departments += cure_department
-
-            if 'cure_way' in data_json:
-                disease_dict['cure_way'] = data_json['cure_way']#治疗途径
-
-            if 'cure_lasttime' in data_json:
-                disease_dict['cure_lasttime'] = data_json['cure_lasttime']#治疗时间
-
-            if 'cured_prob' in data_json:
-                disease_dict['cured_prob'] = data_json['cured_prob']#治愈概率
-
-            if 'common_drug' in data_json:
-                common_drug = data_json['common_drug']#常用药物
-                for drug in common_drug:
-                    rels_commonddrug.append([disease, drug])#提取疾病——药物的关系
-                drugs += common_drug
-
-            if 'recommand_drug' in data_json:
-                recommand_drug = data_json['recommand_drug']#推荐药物
-                drugs += recommand_drug
-                for drug in recommand_drug:
-                    rels_recommanddrug.append([disease, drug])#提取疾病——推荐药物的关系
-
-            if 'not_eat' in data_json:
-                not_eat = data_json['not_eat']#不能吃的食物
-                for _not in not_eat:
-                    rels_noteat.append([disease, _not])#提取疾病——不能吃的食物的关系
-
-                foods += not_eat
-                do_eat = data_json['do_eat']#可以吃的食物
-                for _do in do_eat:
-                    rels_doeat.append([disease, _do])#提取疾病——能吃的食物的关系
-
-                foods += do_eat
-                recommand_eat = data_json['recommand_eat']#推荐吃的食物
-
-                for _recommand in recommand_eat:
-                    rels_recommandeat.append([disease, _recommand])#提取疾病——推荐吃的食物的关系
-                foods += recommand_eat
-
-            if 'check' in data_json:
-                check = data_json['check']#检查项，一个疾病对应多个检查
-                for _check in check:
-                    rels_check.append([disease, _check])#提取疾病——检查项的关系
-                checks += check
-            if 'drug_detail' in data_json:
-                drug_detail = data_json['drug_detail']#药物详细信息
-                producer = [i.split('(')[0] for i in drug_detail]
-                rels_drug_producer += [[i.split('(')[0], i.split('(')[-1].replace(')', '')] for i in drug_detail]
-                producers += producer
-            disease_infos.append(disease_dict)#添加疾病信息list
-        return set(drugs), set(foods), set(checks), set(departments), set(producers), set(symptoms), set(diseases), disease_infos,\
-               rels_check, rels_recommandeat, rels_noteat, rels_doeat, rels_department, rels_commonddrug, rels_drug_producer, rels_recommanddrug,\
-               rels_symptom, rels_acompany, rels_category
-
+            data_json = json.loads(data)
+            cb = data_json['ts_code']
+            cb_dict['ts_code'] = cb
+            ts_codes.append(cb)
+            # 转债代码属性
+            cb_dict['list_date'] = ''              # 上市日期
+            cb_dict['par'] = ''                    # 面值
+            cb_dict['issue_size'] = ''             # 发行总额
+            cb_dict['bond_full_name'] = ''         # 转债名称
+            cb_dict['bond_short_name'] = ''        # 转债简称
+            cb_dict['pay_per_year'] = ''           # 年付息次数
+            cb_dict['value_date'] = ''             # 起息日期
+            cb_dict['maturity_date'] = ''          # 到期日期
+            cb_dict['exchange'] = ''               # 上市地点
+            
+            # 字段是否在文档段中，前期已经将每段数据的字段处理到一致,为以防万一加了if判断
+            if 'stk_code' in data_json:
+                stk_codes.append(data_json['stk_code'])
+                rels_match_to.append([cb,data_json['stk_code']])  # 对于每个转债代码与其正股代码建立联系
+            
+            # 属性部分
+            if 'list_date' in data_json:               
+                cb_dict['list_date'] = data_json['list_date']   # 上市日期
+                
+            if 'par' in data_json:
+                cb_dict['par'] = data_json['par'] # 面值
+                
+            if 'issue_size' in data_json:
+                cb_dict['issue_size'] = data_json['issue_size'] # 发行总额
+                
+            if 'bond_full_name' in data_json:
+                cb_dict['bond_full_name'] = data_json['bond_full_name'] # 转债名称
+            
+            if 'bond_short_name' in data_json:
+                cb_dict['bond_full_name'] = data_json['bond_short_name'] # 转债简称
+                
+            if 'pay_per_year' in data_json:
+                cb_dict['pay_per_year'] = data_json['pay_per_year'] # 年付息次数
+                
+            if 'value_date' in data_json:
+                cb_dict['value_date'] = data_json['value_date'] # 起息日期
+                
+            if 'maturity_date' in data_json:
+                cb_dict['maturity_date'] = data_json['maturity_date'] # 到期日期
+                
+            if 'exchange' in data_json:     
+                cb_dict['exchange'] = data_json['exchange'] # 上市地点  
+            
+            cb_infos.append(cb_dict) # 添加转债信息
+            
+        return set(ts_codes),set(stk_codes),cb_infos,rels_match_to
+    
     '''建立节点'''
-    def create_node(self, label, nodes):
+    def create_node(self,lable,nodes):
         count = 0
         for node_name in nodes:
-            node = Node(label, name=node_name)
+            node = Node(lable,name = node_name)
             self.g.create(node)
             count += 1
-            print(count, len(nodes))
+            print(count,len(nodes))
         return
-
-    '''创建知识图谱中心疾病的节点'''
-    def create_diseases_nodes(self, disease_infos):
+    
+    '''创建知识图谱中心转债节点'''
+    def create_cbs_nodes(self,cb_infos):
         count = 0
-        for disease_dict in disease_infos:
-            node = Node("Disease", name=disease_dict['name'], desc=disease_dict['desc'],
-                        prevent=disease_dict['prevent'], cause=disease_dict['cause'],
-                        easy_get=disease_dict['easy_get'], cure_lasttime=disease_dict['cure_lasttime'],
-                        cure_department=disease_dict['cure_department']
-                        ,cure_way=disease_dict['cure_way'], cured_prob=disease_dict['cured_prob'])#各个疾病节点的属性
+        for cb_dict in cb_infos:
+            node = Node('Cb',name=cb_dict['ts_code'],
+                        list_date=cb_dict['list_date'],
+                        par=cb_dict['par'],
+                        issue_size=cb_dict['issue_size'],
+                        bond_full_name=cb_dict['bond_full_name'],
+                        bond_short_name=cb_dict['bond_short_name'],
+                        pay_per_year=cb_dict['pay_per_year'],
+                        value_date=cb_dict['value_date'],
+                        maturity_date=cb_dict['maturity_date'],
+                        exchange=cb_dict['exchange']
+                        )
             self.g.create(node)
             count += 1
             print(count)
         return
-
-    '''创建知识图谱实体节点类型schema,节点个数多，创建过程慢'''
+    
+    '''创新非中心节点，债券类只有一个正股节点'''
     def create_graphnodes(self):
-        Drugs, Foods, Checks, Departments, Producers, Symptoms, Diseases, disease_infos,rels_check, rels_recommandeat, rels_noteat, rels_doeat, rels_department, rels_commonddrug, rels_drug_producer, rels_recommanddrug,rels_symptom, rels_acompany, rels_category = self.read_nodes()
-        self.create_diseases_nodes(disease_infos)#调用上面的疾病节点创建函数
-        self.create_node('Drug', Drugs)#创建药物节点
-        print(len(Drugs))
-        self.create_node('Food', Foods)#创建食物节点
-        print(len(Foods))
-        self.create_node('Check', Checks)#创建检查节点
-        print(len(Checks))
-        self.create_node('Department', Departments)#创建科室节点
-        print(len(Departments))
-        self.create_node('Producer', Producers)#创建制药厂节点
-        print(len(Producers))
-        self.create_node('Symptom', Symptoms)#创建症状节点
-        return
-
-
-    '''创建11种实体关系边'''
-    def create_graphrels(self):
-        Drugs, Foods, Checks, Departments, Producers, Symptoms, Diseases, disease_infos, rels_check, rels_recommandeat, rels_noteat, rels_doeat, rels_department, rels_commonddrug, rels_drug_producer, rels_recommanddrug,rels_symptom, rels_acompany, rels_category = self.read_nodes()
-        self.create_relationship('Disease', 'Food', rels_recommandeat, 'recommand_eat', '推荐食谱')#调用下面的关系边创建函数
-        self.create_relationship('Disease', 'Food', rels_noteat, 'no_eat', '忌吃')
-        self.create_relationship('Disease', 'Food', rels_doeat, 'do_eat', '宜吃')
-        self.create_relationship('Department', 'Department', rels_department, 'belongs_to', '属于')
-        self.create_relationship('Disease', 'Drug', rels_commonddrug, 'common_drug', '常用药品')
-        self.create_relationship('Producer', 'Drug', rels_drug_producer, 'drugs_of', '生产药品')
-        self.create_relationship('Disease', 'Drug', rels_recommanddrug, 'recommand_drug', '好评药品')
-        self.create_relationship('Disease', 'Check', rels_check, 'need_check', '诊断检查')
-        self.create_relationship('Disease', 'Symptom', rels_symptom, 'has_symptom', '症状')
-        self.create_relationship('Disease', 'Disease', rels_acompany, 'acompany_with', '并发症')
-        self.create_relationship('Disease', 'Department', rels_category, 'belongs_to', '所属科室')
-
+        ts_codes,stk_codes,cb_infos,rels_match_to = self.read_nodes()
+        self.create_cbs_nodes(cb_infos)
+        self.create_node('Stk',stk_codes)  # 创建正股节点
+        print(len(stk_codes))
+        return 
+    
     '''创建实体关联边'''
-    def create_relationship(self, start_node, end_node, edges, rel_type, rel_name):#起点节点，终点节点，边，关系类型，关系名字
+    def create_relationship(self,start_node,end_node,edges,rel_type,rel_name):
+        # 参数含义： 起点节点，终点节点，边，关系类型，关系名字
         count = 0
-        # 去重处理
+        # 去重，自己的知识图谱宅债券类数据缘故不涉及去重，为了以防万一写上
         set_edges = []
         for edge in edges:
-            set_edges.append('###'.join(edge))#使用###作为不同关系之间分隔的标志
+            set_edges.append('###'.join(edge))
         all = len(set(set_edges))
+        
         for edge in set(set_edges):
-            edge = edge.split('###')#选取前两个关系，因为两个节点之间一般最多两个关系
+            edge = edge.split('###')
             p = edge[0]
             q = edge[1]
             query = "match(p:%s),(q:%s) where p.name='%s'and q.name='%s' create (p)-[rel:%s{name:'%s'}]->(q)" % (
                 start_node, end_node, p, q, rel_type, rel_name)#match语法，p，q分别为标签，rel_type关系类别，rel_name 关系名字
             try:
-                self.g.run(query)#执行语句
+                self.g.run(query)
                 count += 1
-                print(rel_type, count, all)
+                print(rel_type,count,all)
             except Exception as e:
                 print(e)
-        return
-
-    '''导出数据'''
+        return 
+        
+       
+    
+    '''创建1种关系边，哈哈，债券类只设计了一种，重心都在基金'''
+    def create_graphrels(self):
+        ts_codes,stk_codes,cb_infos,rels_match_to = self.read_nodes()
+        self.create_relationship('Cb','Stk',rels_match_to,'match_to','对应正股为')
+    
+        
+        '''导出数据'''
     def export_data(self):
-        Drugs, Foods, Checks, Departments, Producers, Symptoms, Diseases, disease_infos, rels_check, rels_recommandeat, rels_noteat, rels_doeat, rels_department, rels_commonddrug, rels_drug_producer, rels_recommanddrug, rels_symptom, rels_acompany, rels_category = self.read_nodes()
-        f_drug = open('drug.txt', 'w+')
-        f_food = open('food.txt', 'w+')
-        f_check = open('check.txt', 'w+')
-        f_department = open('department.txt', 'w+')
-        f_producer = open('producer.txt', 'w+')
-        f_symptom = open('symptoms.txt', 'w+')
-        f_disease = open('disease.txt', 'w+')
-
-        f_drug.write('\n'.join(list(Drugs)))
-        f_food.write('\n'.join(list(Foods)))
-        f_check.write('\n'.join(list(Checks)))
-        f_department.write('\n'.join(list(Departments)))
-        f_producer.write('\n'.join(list(Producers)))
-        f_symptom.write('\n'.join(list(Symptoms)))
-        f_disease.write('\n'.join(list(Diseases)))
-
-        f_drug.close()
-        f_food.close()
-        f_check.close()
-        f_department.close()
-        f_producer.close()
-        f_symptom.close()
-        f_disease.close()
-
+        ts_codes,stk_codes,cb_infos,rels_match_to = self.read_nodes()
+        f_ts = open('./dict/ts.txt', 'w+')
+        f_stk = open('./dict/stk.txt', 'w+')
+        
+        f_ts.write('\n'.join(list(ts_codes)))
+        f_stk.write('\n'.join(list(stk_codes)))
+        
+        f_ts.close()
+        f_stk.close()
         return
+   
+                
+            
 
-
+        
 
 if __name__ == '__main__':
-    handler = MedicalGraph()#创建图数据库
+    handler = FinanceGraph()#创建图数据库
     #handler.export_data()#输出数据，可以选择不执行
     handler.create_graphnodes()#创建节点
     handler.create_graphrels()#创建关系
+    handler.export_data() #导出数据
