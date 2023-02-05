@@ -6,7 +6,7 @@ from answer_search import *
 class ChatBotGraph:
     def __init__(self):
         self.classifier = QuestionClassifier()#调用问题分类子函数，可以链接追踪
-        self.parser = QuestionPaser()#调用问题解析子函数
+        self.parser = QuestionParser()#调用问题解析子函数
         self.searcher = AnswerSearcher()#调用问题搜索子函数
 
     def chat_main(self, sent):

@@ -60,25 +60,30 @@ class QuestionParser:
         
         if question_type == 'ts_stk':
             # 结合自己业务编写cql
-            sql = ["MATCH (m:Disease) where m.name = '{0}' return m.name, m.cause".format(i) for i in entities] # 调用match语句
+            sql = ["MATCH (m:Cb)-[r:match_to]->(n:Stk) where m.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]  # 调用match语句
         elif question_type == 'stk_ts':
-            sql = []
+            sql = ["MATCH (m:Disease)-[r:macth_to]->(n:Symptom) where n.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]
         elif question_type == 'ts_list_date':
-            sql = []
+            sql = ["MATCH (m:Cb) where m.name = '{0}' return m.name, m.list_date".format(i) for i in entities]
         elif question_type == 'ts_issue_size':
-            sql = []
+            sql = ["MATCH (m:Cb) where m.name = '{0}' return m.name, m.issue_size".format(i) for i in entities]
         elif question_type == 'ts_bond_full_name':
-            sql = []
+            sql = ["MATCH (m:Cb) where m.name = '{0}' return m.name, m.bond_full_name".format(i) for i in entities]
         elif question_type == 'ts_bond_short_name':
-            sql = []
+            sql = ["MATCH (m:Cb) where m.name = '{0}' return m.name, m.bond_short_name".format(i) for i in entities]
         elif question_type == 'ts_pay_per_year':
-            sql = []
+            sql = ["MATCH (m:Cb) where m.name = '{0}' return m.name, m.pay_per_year".format(i) for i in entities]
         elif question_type == 'ts_value_date':
-            sql = []
+            sql = ["MATCH (m:Cb) where m.name = '{0}' return m.name, m.value_date".format(i) for i in entities]
         elif question_type == 'ts_maturity_date':
-            sql = []
+            sql = ["MATCH (m:Cb) where m.name = '{0}' return m.name, m.maturity_date".format(i) for i in entities]
         elif question_type == 'ts_exchange':
-            sql = []
+            sql = ["MATCH (m:Cb) where m.name = '{0}' return m.name, m.exchange".format(i) for i in entities]
+            
+        return  sql
+    
+if __name__ == '__main__':
+    handler = QuestionParser()
         
         
         
