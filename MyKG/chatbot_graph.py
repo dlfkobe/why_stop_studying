@@ -10,7 +10,7 @@ class ChatBotGraph:
         self.searcher = AnswerSearcher()#调用问题搜索子函数
 
     def chat_main(self, sent):
-        answer = '我充满知识的大佬此刻很贫瘠，请输入更加标准的词语'#这是初始答案
+        answer = '我充满知识的大脑此刻很贫瘠，请输入更加标准的词语'#这是初始答案
         res_classify = self.classifier.classify(sent)#'sent'是用户的输入内容，利用classify函数先对其进行分类
         if not res_classify:
             return answer#没有找到对应分类内容，返回初始答案

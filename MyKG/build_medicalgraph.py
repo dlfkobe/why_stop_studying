@@ -62,7 +62,7 @@ class FinanceGraph:
                 cb_dict['bond_full_name'] = data_json['bond_full_name'] # 转债名称
             
             if 'bond_short_name' in data_json:
-                cb_dict['bond_full_name'] = data_json['bond_short_name'] # 转债简称
+                cb_dict['bond_short_name'] = data_json['bond_short_name'] # 转债简称
                 
             if 'pay_per_year' in data_json:
                 cb_dict['pay_per_year'] = data_json['pay_per_year'] # 年付息次数

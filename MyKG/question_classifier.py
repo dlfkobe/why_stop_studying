@@ -19,16 +19,16 @@ class QuestionClassifier:
         self.wdtype_dict = self.build_wdtype_dict() # 构造词类型
         
         # 问句疑问词
-        self.list_date_qwds = ['多久上市','什么时候上市','上市','上市时间是多久','上市时间']
+        self.list_date_qwds = ['多久上市','什么时候上市','上市时间是多久','上市时间']
         self.par_qwds = ['面值','单张价格是','一张值多少钱']
         self.issue_size_qwds = ['发行总额是','共发行了多少','总共发行了多少','合计发行价值']
         self.bond_full_name_qwds = ['完整名字','详细版','中文全称','全称']
         self.bond_short_name_qwds = ['简称','简略版','中文缩写','中文名','中文']
-        self.pay_per_year_qwds = ['年付息次数','利息次数','交多少次利息','一年付息几次']
+        self.pay_per_year_qwds = ['年付息次数','利息次数','交多少次利息','一年付息几次','付多少次利息','一年','每年']
         self.value_date_qwds = ['起息日期','多久开始计息','什么时候起息']
         self.maturity_date_qwds = ['到息日期','多久到息','什么时候到息']
-        self.exchange_qwds = ['上市','上市地点','在哪里上市']
-        self.match_to_qwds = ['对应正股','对应','属于哪个正股','正股']
+        self.exchange_qwds = ['上市地点','在哪里上市','什么地方上市']
+        self.match_to_qwds = ['对应正股','对应','属于哪个正股','正股','对应转债股','转债股']
         
         print("模型初始化完成！！！")
         return 

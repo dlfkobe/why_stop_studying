@@ -62,7 +62,7 @@ class QuestionParser:
             # 结合自己业务编写cql
             sql = ["MATCH (m:Cb)-[r:match_to]->(n:Stk) where m.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]  # 调用match语句
         elif question_type == 'stk_ts':
-            sql = ["MATCH (m:Disease)-[r:macth_to]->(n:Symptom) where n.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]
+            sql = ["MATCH (m:Cb)-[r:match_to]->(n:Stk) where n.name = '{0}' return m.name, r.name, n.name".format(i) for i in entities]
         elif question_type == 'ts_list_date':
             sql = ["MATCH (m:Cb) where m.name = '{0}' return m.name, m.list_date".format(i) for i in entities]
         elif question_type == 'ts_issue_size':
