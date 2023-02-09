@@ -2,7 +2,7 @@ import os
 import json
 from py2neo import Graph,Node
 
-class MedicalGraph:
+class FundGraph:
     def __init__(self):
         cur_dir = '/'.join(os.path.abspath(__file__).split('/')[:-1])# 获取当前绝对路径的上层目录 linux中应用'/'split和join
         self.data_path = os.path.join(cur_dir, 'data/fund_data2.json')# 获取json文件路径
@@ -25,17 +25,18 @@ class MedicalGraph:
         rels_served_at = [] # 基金经理-管理人
 
         count = 0
-        for data in open(self.data_path):
+        for data in open(self.data_path,encoding='utf-8'):
+            print(data)
             fund_dict = {}
             manager_dict = {}
             count += 1
             print(count)
-            data_json = json.loads(data)#读取数据
+            data_json = json.loads(data) #读取数据
             # 基金
             fund_code = data_json['ts_code']
-            fund_dict['ts_code'] = fund_code
+            fund_dict['name'] = fund_code
             funds.append(fund_code)
-            fund_dict['name'] = ''
+            fund_dict['chinese_name'] = ''
             fund_dict['type'] = ''
             fund_dict['fund_type'] = ''
             fund_dict['benchmark'] = ''
@@ -44,7 +45,7 @@ class MedicalGraph:
             fund_dict['min_amount'] = ''
             # 基金经理
             manager_name = data_json['manager_name']
-            manager_dict['manager_name'] = manager_name
+            manager_dict['name'] = manager_name
             managers.append(manager_name)
             manager_dict['edu'] = ''
             manager_dict['resume'] = ''
@@ -52,9 +53,9 @@ class MedicalGraph:
             manager_dict['birth_year'] = ''
             # 关系 基金 基金经理
             rels_manage_by_who.append([fund_code, manager_name])
-            
+            # management
             if 'management' in data_json:
-                managements += data_json['management']
+                managements.append(data_json['management'])
                 # 关系 基金 管理人
                 rels_belong_to.append([fund_code,data_json['management']])
                 # 关系 基金经理 管理人
@@ -62,7 +63,7 @@ class MedicalGraph:
             
             # 基金属性部分
             if 'name' in data_json:
-                fund_dict['name'] = data_json['name']
+                fund_dict['chinese_name'] = data_json['name']
             
             if 'type' in data_json:
                 fund_dict['type'] = data_json['type']
@@ -96,7 +97,7 @@ class MedicalGraph:
             if 'birth_year' in data_json:
                 manager_dict['gender'] = data_json['birth_year']
             manager_infos.append(manager_dict)
-            
+        # print(rels_belong_to,rels_served_at)
         return set(funds),set(managers),set(managements),fund_infos,manager_infos,rels_belong_to,rels_manage_by_who,rels_served_at
     
             
@@ -110,66 +111,47 @@ class MedicalGraph:
             print(count, len(nodes))
         return
 
-    '''创建知识图谱基金的节点'''
-    def create_diseases_nodes(self, disease_infos):
+    '''创建知识图谱基金经理的节点'''
+    def create_manager_nodes(self, manager_infos):
         count = 0
-        for fund_dict in disease_infos:
-            node = Node("Disease", name=disease_dict['name'], desc=disease_dict['desc'],
-                        prevent=disease_dict['prevent'], cause=disease_dict['cause'],
-                        easy_get=disease_dict['easy_get'], cure_lasttime=disease_dict['cure_lasttime'],
-                        cure_department=disease_dict['cure_department']
-                        ,cure_way=disease_dict['cure_way'], cured_prob=disease_dict['cured_prob'])#各个疾病节点的属性
+        for manager_dict in manager_infos:
+            node = Node("Manager", name=manager_dict['name'], edu=manager_dict['edu'],
+                        resume=manager_dict['resume'], gender=manager_dict['gender'],
+                        birth_year=manager_dict['birth_year'])#各个疾病节点的属性
+            self.g.create(node)
+            count+=1
+            print(count)
+        return
+    
+    '''创建知识图谱基金的节点'''
+    def create_fund_nodes(self, fund_infos):
+        count = 0
+        
+        for fund_dict in fund_infos:
+            node = Node("Fund", name=fund_dict['name'],chinese_name=fund_dict['chinese_name'], type_=fund_dict['type'],
+                        fund_type=fund_dict['fund_type'], benchmark=fund_dict['benchmark'],
+                        issue_amount=fund_dict['issue_amount'], m_fee=fund_dict['m_fee'],
+                        min_amount=fund_dict['min_amount'])
             self.g.create(node)
             count += 1
             print(count)
         return
     
-    '''创建知识图谱基金经理的节点'''
-    def create_diseases_nodes(self, disease_infos):
-        count = 0
-        forfund_dict in disease_infos:
-            node = Node("Disease", name=disease_dict['name'], desc=disease_dict['desc'],
-                        prevent=disease_dict['prevent'], cause=disease_dict['cause'],
-                        easy_get=disease_dict['easy_get'], cure_lasttime=disease_dict['cure_lasttime'],
-                        cure_department=disease_dict['cure_department']
-                        ,cure_way=disease_dict['cure_way'], cured_prob=disease_dict['cured_prob'])#各个疾病节点的属性
-            self.g.create(node)
-            count += 1
-            print(count)
-        return
-
-    '''创建知识图谱实体节点类型schema,节点个数多，创建过程慢'''
+    '''创新图谱节点，基金类只有一个管理人非中心节点'''
     def create_graphnodes(self):
-        Drugs, Foods, Checks, Departments, Producers, Symptoms, Diseases, disease_infos,rels_check, rels_recommandeat, rels_noteat, rels_doeat, rels_department, rels_commonddrug, rels_drug_producer, rels_recommanddrug,rels_symptom, rels_acompany, rels_category = self.read_nodes()
-        self.create_diseases_nodes(disease_infos)#调用上面的疾病节点创建函数
-        self.create_node('Drug', Drugs)#创建药物节点
-        print(len(Drugs))
-        self.create_node('Food', Foods)#创建食物节点
-        print(len(Foods))
-        self.create_node('Check', Checks)#创建检查节点
-        print(len(Checks))
-        self.create_node('Department', Departments)#创建科室节点
-        print(len(Departments))
-        self.create_node('Producer', Producers)#创建制药厂节点
-        print(len(Producers))
-        self.create_node('Symptom', Symptoms)#创建症状节点
-        return
+        # ts_codes,stk_codes,cb_infos,rels_match_to = self.read_nodes()
+        # self.create_cbs_nodes(cb_infos)
+        # self.create_node('Stk',stk_codes)  # 创建正股节点
+        # print(len(stk_codes))
+        funds,managers,managements,fund_infos,manager_infos,rels_belong_to,rels_manage_by_who,rels_served_at = self.read_nodes()
+        self.create_fund_nodes(fund_infos)
+        self.create_manager_nodes(manager_infos)
+        self.create_node("Management",managements)
+        print(len(managements))
+        return 
 
 
-    '''创建11种实体关系边'''
-    def create_graphrels(self):
-        Drugs, Foods, Checks, Departments, Producers, Symptoms, Diseases, disease_infos, rels_check, rels_recommandeat, rels_noteat, rels_doeat, rels_department, rels_commonddrug, rels_drug_producer, rels_recommanddrug,rels_symptom, rels_acompany, rels_category = self.read_nodes()
-        self.create_relationship('Disease', 'Food', rels_recommandeat, 'recommand_eat', '推荐食谱')#调用下面的关系边创建函数
-        self.create_relationship('Disease', 'Food', rels_noteat, 'no_eat', '忌吃')
-        self.create_relationship('Disease', 'Food', rels_doeat, 'do_eat', '宜吃')
-        self.create_relationship('Department', 'Department', rels_department, 'belongs_to', '属于')
-        self.create_relationship('Disease', 'Drug', rels_commonddrug, 'common_drug', '常用药品')
-        self.create_relationship('Producer', 'Drug', rels_drug_producer, 'drugs_of', '生产药品')
-        self.create_relationship('Disease', 'Drug', rels_recommanddrug, 'recommand_drug', '好评药品')
-        self.create_relationship('Disease', 'Check', rels_check, 'need_check', '诊断检查')
-        self.create_relationship('Disease', 'Symptom', rels_symptom, 'has_symptom', '症状')
-        self.create_relationship('Disease', 'Disease', rels_acompany, 'acompany_with', '并发症')
-        self.create_relationship('Disease', 'Department', rels_category, 'belongs_to', '所属科室')
+
 
     '''创建实体关联边'''
     def create_relationship(self, start_node, end_node, edges, rel_type, rel_name):#起点节点，终点节点，边，关系类型，关系名字
@@ -185,6 +167,7 @@ class MedicalGraph:
             q = edge[1]
             query = "match(p:%s),(q:%s) where p.name='%s'and q.name='%s' create (p)-[rel:%s{name:'%s'}]->(q)" % (
                 start_node, end_node, p, q, rel_type, rel_name)#match语法，p，q分别为标签，rel_type关系类别，rel_name 关系名字
+            print(query)
             try:
                 self.g.run(query)#执行语句
                 count += 1
@@ -192,40 +175,38 @@ class MedicalGraph:
             except Exception as e:
                 print(e)
         return
+    
+    '''创建实体关系边'''
+    def create_graphrels(self):
+        funds,managers,managements,fund_infos,manager_infos,rels_belong_to,rels_manage_by_who,rels_served_at = self.read_nodes()
+        self.create_relationship('Fund','Manager',rels_manage_by_who,"manage_by_who","对应基金经理为")
+        self.create_relationship("Fund","Management",rels_belong_to,"belong_to","属于")
+        self.create_relationship("Manager","Management",rels_served_at,"served_at","任职于")
+        
+        
 
     '''导出数据'''
     def export_data(self):
-        Drugs, Foods, Checks, Departments, Producers, Symptoms, Diseases, disease_infos, rels_check, rels_recommandeat, rels_noteat, rels_doeat, rels_department, rels_commonddrug, rels_drug_producer, rels_recommanddrug, rels_symptom, rels_acompany, rels_category = self.read_nodes()
-        f_drug = open('drug.txt', 'w+')
-        f_food = open('food.txt', 'w+')
-        f_check = open('check.txt', 'w+')
-        f_department = open('department.txt', 'w+')
-        f_producer = open('producer.txt', 'w+')
-        f_symptom = open('symptoms.txt', 'w+')
-        f_disease = open('disease.txt', 'w+')
-
-        f_drug.write('\n'.join(list(Drugs)))
-        f_food.write('\n'.join(list(Foods)))
-        f_check.write('\n'.join(list(Checks)))
-        f_department.write('\n'.join(list(Departments)))
-        f_producer.write('\n'.join(list(Producers)))
-        f_symptom.write('\n'.join(list(Symptoms)))
-        f_disease.write('\n'.join(list(Diseases)))
-
-        f_drug.close()
-        f_food.close()
-        f_check.close()
-        f_department.close()
-        f_producer.close()
-        f_symptom.close()
-        f_disease.close()
-
+        funds,managers,managements,fund_infos,manager_infos,rels_belong_to,rels_manage_by_who,rels_served_at = self.read_nodes()
+        f_fund = open('./dict/fund.txt', 'w+')
+        f_manager = open('./dict/manager.txt', 'w+')
+        f_management = open('./dict/management.txt', 'w+')
+        
+        f_fund.write('\n'.join(list(funds)))
+        f_manager.write('\n'.join(list(managers)))
+        f_management.write('\n'.join(list(managements)))
+        
+        f_fund.close()
+        f_management.close()
+        f_manager.close()
         return
 
 
 
 if __name__ == '__main__':
-    handler = MedicalGraph()#创建图数据库
+    handler = FundGraph()#创建图数据库
+    # handler.read_nodes()
     #handler.export_data()#输出数据，可以选择不执行
-    handler.create_graphnodes()#创建节点
-    handler.create_graphrels()#创建关系
+    handler.create_graphnodes() #创建节点
+    handler.create_graphrels() #创建关系
+    handler.export_data()

@@ -134,6 +134,7 @@ class FinanceGraph:
             q = edge[1]
             query = "match(p:%s),(q:%s) where p.name='%s'and q.name='%s' create (p)-[rel:%s{name:'%s'}]->(q)" % (
                 start_node, end_node, p, q, rel_type, rel_name)#match语法，p，q分别为标签，rel_type关系类别，rel_name 关系名字
+            print(query)
             try:
                 self.g.run(query)
                 count += 1
