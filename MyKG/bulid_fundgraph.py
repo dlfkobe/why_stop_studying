@@ -98,7 +98,7 @@ class FundGraph:
                 manager_dict['gender'] = data_json['birth_year']
             manager_infos.append(manager_dict)
         # print(rels_belong_to,rels_served_at)
-        return set(funds),set(managers),set(managements),fund_infos,manager_infos,rels_belong_to,rels_manage_by_who,rels_served_at
+        return set(funds),set(managers),set(managements),fund_infos,self.DictinList_duplicate(manager_infos),rels_belong_to,rels_manage_by_who,rels_served_at
     
             
     '''建立节点'''
@@ -188,9 +188,9 @@ class FundGraph:
     '''导出数据'''
     def export_data(self):
         funds,managers,managements,fund_infos,manager_infos,rels_belong_to,rels_manage_by_who,rels_served_at = self.read_nodes()
-        f_fund = open('./dict/fund.txt', 'w+')
-        f_manager = open('./dict/manager.txt', 'w+')
-        f_management = open('./dict/management.txt', 'w+')
+        f_fund = open('./dict/fund.txt', 'w+',encoding='utf-8')
+        f_manager = open('./dict/manager.txt', 'w+',encoding='utf-8')
+        f_management = open('./dict/management.txt', 'w+',encoding='utf-8')
         
         f_fund.write('\n'.join(list(funds)))
         f_manager.write('\n'.join(list(managers)))
@@ -201,6 +201,22 @@ class FundGraph:
         f_manager.close()
         return
 
+    "需要对基金经理info进行去重"
+    def DictinList_duplicate(self,data_list):
+        """
+        列表套字典去重
+        :return:
+        """
+        seen = set()
+        new_l = []
+        for d in data_list:
+            t = tuple(d.items())
+            if t not in seen:
+                seen.add(t)
+                new_l.append(d)
+        print(new_l)
+        return new_l
+
 
 
 if __name__ == '__main__':
@@ -209,4 +225,4 @@ if __name__ == '__main__':
     #handler.export_data()#输出数据，可以选择不执行
     handler.create_graphnodes() #创建节点
     handler.create_graphrels() #创建关系
-    handler.export_data()
+    # handler.export_data()

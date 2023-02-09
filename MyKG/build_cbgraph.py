@@ -154,8 +154,8 @@ class FinanceGraph:
         '''导出数据'''
     def export_data(self):
         ts_codes,stk_codes,cb_infos,rels_match_to = self.read_nodes()
-        f_ts = open('./dict/ts.txt', 'w+')
-        f_stk = open('./dict/stk.txt', 'w+')
+        f_ts = open('./dict/ts.txt', 'w+',encoding='utf-8')
+        f_stk = open('./dict/stk.txt', 'w+',encoding='utf-8')
         
         f_ts.write('\n'.join(list(ts_codes)))
         f_stk.write('\n'.join(list(stk_codes)))
