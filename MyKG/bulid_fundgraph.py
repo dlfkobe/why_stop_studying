@@ -95,7 +95,7 @@ class FundGraph:
                 manager_dict['gender'] = data_json['gender']
             
             if 'birth_year' in data_json:
-                manager_dict['gender'] = data_json['birth_year']
+                manager_dict['birth_year'] = data_json['birth_year']
             manager_infos.append(manager_dict)
         # print(rels_belong_to,rels_served_at)
         return set(funds),set(managers),set(managements),fund_infos,self.DictinList_duplicate(manager_infos),rels_belong_to,rels_manage_by_who,rels_served_at
@@ -225,4 +225,4 @@ if __name__ == '__main__':
     #handler.export_data()#输出数据，可以选择不执行
     handler.create_graphnodes() #创建节点
     handler.create_graphrels() #创建关系
-    # handler.export_data()
+    # handler.export_data()er
