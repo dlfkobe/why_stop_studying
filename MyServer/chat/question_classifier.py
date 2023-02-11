@@ -3,7 +3,8 @@ import ahocorasick
 
 class QuestionClassifier:
     def __init__(self):
-        cur_dir = '/'.join(os.path.abspath(__file__).split('/')[:-1])
+        # cur_dir = '/'.join(os.path.abspath(__file__).split('/')[:-1])
+        cur_dir = os.path.dirname(os.path.abspath(__file__))
         # 特征词路径
         self.ts_path = os.path.join(cur_dir,'dict/ts.txt') # 转债代码
         self.stk_path = os.path.join(cur_dir,'dict/stk.txt') # 正股代码
