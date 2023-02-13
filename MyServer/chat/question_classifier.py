@@ -63,13 +63,18 @@ class QuestionClassifier:
     
     def classify(self,question):
         data = {}
-        cb_dict = self.check_cb(question)#调用下面定义的check_cb问句过滤函数
-        if not cb_dict:
-            return {}
-        data['args'] = cb_dict
+        finance_dict = self.check_temp(question)#调用下面定义的check_temp问句过滤函数
+        if not finance_dict:
+            if 'temp_dict' in globals():    # 判断是否是首次提问，若首次提问，则diseases_dict无值
+                finance_dict = temp_dict
+            else:
+                return {}
+        print("temp_dict : ", temp_dict)
+        print("finance_dict : ",finance_dict)
+        data['args'] = temp_dict
         # 获取问句中的实体类型
         types = []
-        for type_ in cb_dict.values():
+        for type_ in temp_dict.values():
             types += type_
         question_type = 'others'  # 跟债券基金无关的问题类型
         
@@ -237,7 +242,7 @@ class QuestionClassifier:
         return actree
     
     '''问句过滤'''
-    def check_cb(self,question):
+    def check_temp(self,question):
         region_wds = []
         for i in self.region_tree.iter(question): # ahocorasick库 匹配问题  iter返回一个元组
             wd = i[1][1]
@@ -249,7 +254,16 @@ class QuestionClassifier:
                     stop_wds.append(wd1) # stop_wds取重复的短的词，如region_wds=['乙肝', '肝硬化', '硬化']，则stop_wds=['硬化']
         final_wds = [ i for i in region_wds if i not in stop_wds]
         final_dict = {i:self.wdtype_dict.get(i) for i in final_wds}
-        
+        global temp_dict
+        if final_dict:
+            temp_dict = final_dict
+        print("final_dict",final_dict)
+        if 'temp_dict' in globals():
+            print("temp_dict1 : ",temp_dict)
+        else:
+            print("temp_dict does not exist.")
+
+            
         return final_dict
     
     

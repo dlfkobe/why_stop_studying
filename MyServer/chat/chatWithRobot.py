@@ -2,6 +2,10 @@ from chat.question_classifier import *
 from chat.question_parser import *
 from chat.answer_search import *
 
+# from question_classifier import *
+# from question_parser import *
+# from answer_search import *
+
 '''问答类'''
 class ChatBotGraph:
     def __init__(self):
@@ -23,8 +27,8 @@ class ChatBotGraph:
 
 if __name__ == '__main__':
     handler = ChatBotGraph()
-    # while 1:#进入一个死循环
-    #     # question = input('咨询:')
-    #     answer = handler.chat_main(question)
-    #     print('老莫:', answer)
+    while 1:#进入一个死循环
+        question = input('咨询:')
+        answer = handler.chat_main(question)
+        print('老莫:', answer)
 
