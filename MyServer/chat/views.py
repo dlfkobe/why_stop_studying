@@ -10,6 +10,5 @@ def test(request):
     print(question)
     answer = handler.chat_main(question)
     print(answer)
-    
-    
+    print("shdjkash")
     return HttpResponse(answer)
