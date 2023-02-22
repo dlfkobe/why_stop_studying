@@ -19,5 +19,5 @@ from chat import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('test/',views.test)
+    path('chat/',views.test)
 ]
