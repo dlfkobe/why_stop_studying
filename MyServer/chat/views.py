@@ -8,7 +8,10 @@ def test(request):
     
     question = request.GET.get("word")
     print(question)
+    if not question:
+        return HttpResponse("请输入问题")
+    print(question)
     answer = handler.chat_main(question)
     print(answer)
-    print("shdjkash")
+    # print("shdjkash")
     return HttpResponse(answer)
