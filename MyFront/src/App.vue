@@ -70,6 +70,10 @@ const send = (e) => {
     })
     input.value = "";
   }
+  let box = document.getElementsByClassName("chat-msg")[0]
+  setTimeout(()=>{
+    box.scrollTop = box.scrollHeight
+  },0)
 };
 </script>
 
