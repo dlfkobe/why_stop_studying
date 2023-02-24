@@ -7,14 +7,11 @@
             <div class="msg-box" :class="item.name == 'GPT' ? 'left' : 'right'">
               <div class="avatar"></div>
               <div class="message">
-                <div
-                  class="message-text"
-                  :class="
-                    item.name == 'GPT'
-                      ? 'message-text-left'
-                      : 'message-text-right'
-                  "
-                >
+                <div class="message-text" :class="
+                  item.name == 'GPT'
+                    ? 'message-text-left'
+                    : 'message-text-right'
+                ">
                   <p>{{ item.msg }}</p>
                 </div>
               </div>
@@ -53,27 +50,27 @@ let chatList = ref([
 ]);
 const input = ref();
 const send = (e) => {
-  const names = ["GPT","XiaoDu"]
-  let index = Math.floor(Math.random()*2)
-  console.log(index);
+  let box = document.getElementsByClassName("chat-msg")[0]
   if (e.code == "Enter") {
     let obj = {};
     obj.name = "XiaoDu";
     obj.msg = input.value;
     chatList.value.push(obj)
-    request.get(`/chat?word=${obj.msg}`).then(res=>{
+    request.get(`/chat?word=${obj.msg}`).then(res => {
       console.log(res.data);
       let temp = {}
       temp.name = "GPT"
       temp.msg = res.data
       chatList.value.push(temp)
+      setTimeout(() => {
+        box.scrollTop = box.scrollHeight
+      }, 0)
     })
     input.value = "";
   }
-  let box = document.getElementsByClassName("chat-msg")[0]
-  setTimeout(()=>{
+  setTimeout(() => {
     box.scrollTop = box.scrollHeight
-  },0)
+  }, 0)
 };
 </script>
 
@@ -83,6 +80,7 @@ body {
   padding: 0;
   background-color: #a0bab6;
 }
+
 .container {
   margin: 0 auto;
   width: 600px;
@@ -90,6 +88,7 @@ body {
   background: #a0bab6;
   box-shadow: 20px 20px 60px #889e9b, -20px -20px 60px #b8d6d1;
 }
+
 .chat-wrapper {
   margin: 120px auto 0;
   padding-top: 20px;
@@ -99,6 +98,7 @@ body {
   border-radius: 20px;
   position: relative;
 }
+
 .chat-msg {
   overflow-y: scroll;
   display: block;
@@ -106,6 +106,7 @@ body {
   height: 700px;
   border-radius: 50px;
 }
+
 .msg-box {
   display: flex;
   padding: 0 30px;
@@ -113,6 +114,7 @@ body {
   align-items: center;
   justify-content: flex-start;
 }
+
 .avatar {
   background-color: transparent;
   display: block;
@@ -122,6 +124,7 @@ body {
   align-self: flex-start;
   margin-top: 16px;
 }
+
 .message {
   background-color: transparent;
   word-wrap: break-word;
@@ -131,6 +134,7 @@ body {
   /* height: 60px; */
   padding: 20px;
 }
+
 .message-text-left {
   position: relative;
   background-color: aliceblue;
@@ -142,6 +146,7 @@ body {
   justify-content: center;
   align-items: center;
 }
+
 .message-text-left::before {
   position: absolute;
   top: 20px;
@@ -155,6 +160,7 @@ body {
   border-left: solid 10px transparent;
   border-right: solid 10px aliceblue;
 }
+
 .message-text-right {
   position: relative;
   display: flex;
@@ -165,6 +171,7 @@ body {
   min-height: 60px;
   padding: 0 20px;
 }
+
 .message-text-right::before {
   position: absolute;
   top: 20px;
@@ -178,22 +185,27 @@ body {
   border-left: solid 10px aliceblue;
   border-right: solid 10px transparent;
 }
-.message-text-right {
-}
+
+.message-text-right {}
+
 .left .avatar {
   background: url("./assets/img/ChatGPT.png");
   background-size: 100% 100%;
 }
+
 .right {
   flex-direction: row-reverse;
 }
+
 .chat-gpt {
   width: 80px;
 }
+
 .right .avatar {
   background: url("./assets/img/user.jfif");
   background-size: 100% 100%;
 }
+
 .chat-input {
   margin: 0 auto;
   bottom: 0;
@@ -201,19 +213,24 @@ body {
   height: 80px;
   background-color: transparent;
 }
+
 .input {
   border: none;
 }
+
 ::-webkit-scrollbar {
   display: none;
 }
+
 .avatar:hover {
   animation: span 2s linear infinite;
 }
+
 @keyframes span {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -224,9 +241,9 @@ body {
 .list-leave-active {
   transition: all 0.5s ease;
 }
+
 .list-enter-from,
 .list-leave-to {
   opacity: 0;
   transform: translateX(30px);
-}
-</style>
+}</style>
